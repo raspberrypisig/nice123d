@@ -1,7 +1,10 @@
 from nicegui import ui
+from nicegui import events
 import os 
 from datetime import datetime
 import time
+from pathlib import Path
+
 
 
 class CodeEditor(ui.element):
@@ -14,12 +17,13 @@ class CodeEditor(ui.element):
         with ui.row().classes('w-full h-10'):
             self.toolbar = ui.row().classes('w-full')
             with self.toolbar:
-                ui.button("New",      icon="star", on_click=self.on_new)
-                ui.button("Load",     icon="upload", on_click=self.on_load)
-                ui.button("Save",     icon="download    ", on_click=self.on_save)
-                ui.button("Undo",     icon="undo", on_click=self.on_undo).props('color="grey"')
-                ui.button("Redo",     icon="redo", on_click=self.on_redo).props('color="grey"')
-                ui.button("Run Code", icon="send", on_click=self.on_run)
+                # https://fonts.google.com/icons
+                ui.button("New",      icon="star",     on_click=self.on_new)
+                ui.button("Load",     icon="upload",   on_click=self.on_load)
+                ui.button("Save",     icon="download", on_click=self.on_save)
+                ui.button("Run Code", icon="send",     on_click=self.on_run)
+                ui.button("",         icon="undo",     on_click=self.on_undo).props('color="grey"')
+                ui.button("",         icon="redo",     on_click=self.on_redo).props('color="grey"')
 
         with ui.row().classes('w-full h-full'):
 
@@ -67,10 +71,18 @@ class CodeEditor(ui.element):
     def on_load(self):
         """Load code from a file into the editor."""
         self.time_start()
-        with open('my_python_script.py', 'r') as f:
-            content = f.read()
-        self.editor.set_value(content)
-        self.info('file', 'loaded successfully')
+
+        def handle_upload(e: events.UploadEventArguments):
+            text = e.content.read().decode('utf-8')
+            print(dir(e.content))
+            self.editor.value = text
+            upload_bar.delete()
+            
+        upload_bar = ui.upload(auto_upload=True, on_upload=handle_upload).props('accept=.py').classes('max-w-full')        
+        self.file_name = upload_bar.name()
+        
+        self.log.push(self.info('file', 'loaded successfully'))
+        
 
     def on_undo(self):
         """Undo the last action in the editor."""
