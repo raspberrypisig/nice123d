@@ -42,6 +42,14 @@ follow the steps above but add the last build version for `build123d` with:
 
 ````
 pip install git+https://github.com/gumyr/build123d.git
+pip install pyyaml
+pip install gitpython
+pip install click
+pip install rich
+
+
+
+
 ```
 
 
