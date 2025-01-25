@@ -42,7 +42,7 @@ class CodeEditor(ui.element):
                 self.on_new()
                 self.model_path = code_file.parent
 
-            file = ui.input(    label='File:', value=self.file_name,
+            self.file = ui.input(    label='File:', value=self.file_name,
                                 on_change=self.set_file_name,
                             ).props('clearable').classes('w-40 h-10')
             
@@ -86,7 +86,8 @@ class CodeEditor(ui.element):
         def handle_upload(e: events.UploadEventArguments):
             text = e.content.read().decode('utf-8')
             self.editor.value = text
-            self.file_name = e.name
+            self.file.value = e.name 
+            
             upload_bar.delete()
             
         upload_bar = ui.upload(auto_upload=True, on_upload=handle_upload).props('accept=.py').classes('max-w-full')        
