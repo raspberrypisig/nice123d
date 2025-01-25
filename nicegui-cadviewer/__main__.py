@@ -127,15 +127,15 @@ class MainWindow(ui.element):
 
         with ui.splitter().classes(
             "w-full h-full no-wrap items-stretch border"
-        ).props('vertical') as splitter:
+            ) as splitter:
             with splitter.before:
 
-                with ui.tabs().classes('w-full h-full items-stretch border').props('vertical') as tabs:
+                with ui.tabs().classes('w-full h-full items-stretch border') as tabs:
                     page_editor     = ui.tab('Editor', icon='code')
                     page_parameters = ui.tab('Parameters', icon='plumbing')
                     page_settings   = ui.tab('Settings', icon='settings')
                 
-                with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border').props('vertical') as tab_panels:
+                with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border') as tab_panels:
                     with ui.tab_panel(page_editor):
                         editor = CodeEditor(code_file=code_file, new_file=new_file)
 
@@ -182,7 +182,7 @@ def startup_all():
 def shutdown_all():
     ocpcv_proc.kill()
     # ocpcv_proc.terminate() # TODO: investigate best cross-platform solution
-    editor.on_save()
+    # editor.on_save()
     app.shutdown()
 
 
