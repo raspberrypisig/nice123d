@@ -2,6 +2,7 @@ from nicegui import ui
 from nicegui import events
 import os 
 from datetime import datetime
+import platform
 import time
 from pathlib import Path
 
@@ -20,18 +21,27 @@ class CodeEditor(ui.element):
 
         
         # Create a toolbar with buttons
-        with ui.row().classes('w-full h-10'):
-            self.toolbar = ui.row().classes('w-full')
+        with ui.row().classes('w-full h-5'):
+            if platform.system() == 'Mac':
+                meta = "Cmd"
+            else:
+                meta = "Ctrl"
+            
+            self.toolbar = ui.row().classes('w-full h-10')
             with self.toolbar:
                 # https://fonts.google.com/icons
-                ui.button("New",      icon="star",     on_click=self.on_new)
-                ui.button("Load",     icon="upload",   on_click=self.on_load)
-                ui.button("Save",     icon="download", on_click=self.on_save)
-                ui.button("Run Code", icon="send",     on_click=self.on_run)
-                ui.button("",         icon="undo",     on_click=self.on_undo).props('color="grey"')
-                ui.button("",         icon="redo",     on_click=self.on_redo).props('color="grey"')
+                ui.button("",    icon="star",     on_click=self.on_new ).tooltip(f'New `{meta}+N`')
+                ui.button("",    icon="upload",   on_click=self.on_load).tooltip(f'Load `{meta}+O`')
+                self.file = ui.input(    label='File:', value=self.file_name,
+                    on_change=self.set_file_name,
+                ).props('clearable').classes('w-40 h-5')
 
-        with ui.row().classes('w-full h-full'):
+                ui.button("",    icon="download", on_click=self.on_save).tooltip(f'Save `{meta}+S`')
+                ui.button("Run", icon="send",     on_click=self.on_run ).tooltip(f'New `{meta}+Enter`')
+                if 0:
+                    ui.button("",         icon="undo",     on_click=self.on_undo).props('color="grey"')
+                    ui.button("",         icon="redo",     on_click=self.on_redo).props('color="grey"')
+
             if code_file and code_file.exists():
                 with code_file.open() as f:
                     code = f.read()
@@ -42,11 +52,8 @@ class CodeEditor(ui.element):
                 self.on_new()
                 self.model_path = code_file.parent
 
-            self.file = ui.input(    label='File:', value=self.file_name,
-                                on_change=self.set_file_name,
-                            ).props('clearable').classes('w-40 h-10')
             
-
+        with ui.row().classes('w-full h-full'):
             # Setup editor
             self.editor = ui.codemirror(language='python', theme='dracula')
             self.editor.classes('w-full h-full')
