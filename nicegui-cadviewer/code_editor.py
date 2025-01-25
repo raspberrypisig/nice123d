@@ -34,7 +34,7 @@ class CodeEditor(ui.element):
                 ui.button("",    icon="upload",   on_click=self.on_load).tooltip(f'Load `{meta}+O`')
                 self.file = ui.input(    label='File:', value=self.file_name,
                     on_change=self.set_file_name,
-                ).props('clearable').classes('w-40 h-5')
+                ).props('clearable').classes('w-40')
 
                 ui.button("",    icon="download", on_click=self.on_save).tooltip(f'Save `{meta}+S`')
                 ui.button("Run", icon="send",     on_click=self.on_run ).tooltip(f'New `{meta}+Enter`')

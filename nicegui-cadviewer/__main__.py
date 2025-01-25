@@ -112,29 +112,30 @@ class MainWindow(ui.element):
         
         self.width=1800
         self.height=900
-                
-        with ui.row().classes('w-full items-center'):
-            result = ui.label().classes('mr-auto')
-            with ui.button(icon='menu'):
-                with ui.menu() as menu:
-                    ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
-                    ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
-                    ui.menu_item('Menu item 3 (keep open)',
-                                lambda: result.set_text('Selected item 3'), auto_close=False)
-                    ui.separator()
-                    ui.menu_item('Close', menu.close)
+
+        if 0:       
+            with ui.row().classes('w-full items-center'):
+                result = ui.label().classes('mr-auto')
+                with ui.button(icon='menu'):
+                    with ui.menu() as menu:
+                        ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
+                        ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
+                        ui.menu_item('Menu item 3 (keep open)',
+                                    lambda: result.set_text('Selected item 3'), auto_close=False)
+                        ui.separator()
+                        ui.menu_item('Close', menu.close)
 
         with ui.splitter().classes(
             "w-full h-full no-wrap items-stretch border"
-        ) as splitter:
+        ).props('vertical') as splitter:
             with splitter.before:
 
-                with ui.tabs().classes('w-full h-full items-stretch border') as tabs:
+                with ui.tabs().classes('w-full h-full items-stretch border').props('vertical') as tabs:
                     page_editor     = ui.tab('Editor', icon='code')
                     page_parameters = ui.tab('Parameters', icon='plumbing')
                     page_settings   = ui.tab('Settings', icon='settings')
                 
-                with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border'):
+                with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border').props('vertical') as tab_panels:
                     with ui.tab_panel(page_editor):
                         editor = CodeEditor(code_file=code_file, new_file=new_file)
 
