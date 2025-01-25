@@ -32,14 +32,21 @@ license:
     limitations under the License.
 
 """
-
+# [Imports]
 from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 import subprocess
 from pathlib import Path
+from code_editor import CodeEditor
+import platform
 
-models_path = Path(__file__).parent / "models"
+# [Variables]
+models_path = Path(__file__).parent / ".." / "models"
 code_file = models_path / "basic.py"
+editor = None 
+# get the operating system
+active_os = platform.system()
+    
 
 app.native.window_args["resizable"] = True
 app.native.start_args["debug"] = True
@@ -49,54 +56,29 @@ app.native.settings["MATPLOTLIB"] = False
 editor_fontsize = 18
 # TODO: consider separate editor execution thread from nicegui thread
 
-
-# run ocp_vscode in a subprocess
-def startup_all():
-    global ocpcv_proc
-    # spawn separate viewer process
-    ocpcv_proc = subprocess.Popen(["python", "-m", "ocp_vscode"])
-    # pre-import build123d and ocp_vscode in main thread
-    exec("from build123d import *\nfrom ocp_vscode import *")
-
-
-def button_run_callback():
-    exec(code.value)
-
-
-def shutdown_all():
-    ocpcv_proc.kill()
-    # ocpcv_proc.terminate() # TODO: investigate best cross-platform solution
-    app.shutdown()
-
-
-app.on_startup(startup_all)
-
 button_frac = 0.05
 
-with code_file.open() as f:
-    code_text = f.read()
-
-
 with ui.splitter().classes(
-    "w-full h-[calc(100vh-2rem)] no-wrap items-stretch border"
+    "w-full h-full no-wrap items-stretch border"
 ) as splitter:
     with splitter.before:
-        with ui.column().classes("w-full items-stretch border"):
-            with ui.row():
-                with ui.column().classes("w-1/3"):
-                    ui.button(
-                        "Run Code", icon="send", on_click=lambda: button_run_callback()
-                    ).classes(f"h-[calc(100vh*{button_frac}-3rem)]")
-            # ui.button('shutdown', on_click=lambda: shutdown_all()) # just close the window
-            code = (
-                ui.codemirror(
-                    code_text,
-                    language="Python",
-                    theme="vscodeLight",
-                )
-                .classes(f"h-[calc(100vh*{1-button_frac}-3rem)]")
-                .style(f"font-size: {editor_fontsize}px")
-            )
+
+        with ui.tabs().classes('w-full h-full items-stretch border') as tabs:
+            page_editor     = ui.tab('Editor', icon='code')
+            page_parameters = ui.tab('Parameters', icon='plumbing')
+            page_settings   = ui.tab('Settings', icon='settings')
+         
+        with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border'):
+            with ui.tab_panel(page_editor):
+                editor = CodeEditor(code_file=code_file)
+
+            with ui.tab_panel(page_parameters):
+                ui.label('Parameters')
+
+            with ui.tab_panel(page_settings):
+                ui.label('Settings')
+
+            
     with splitter.after:
         with ui.column().classes("w-full items-stretch border"):
             ocpcv = (
@@ -108,21 +90,68 @@ with ui.splitter().classes(
 
 # handle the CTRL + Enter run shortcut:
 def handle_key(e: KeyEventArguments):
+    if active_os == "Windows":
+        main_modifier = e.modifiers.ctrl
+    elif active_os == "Mac":
+        main_modifier = e.modifiers.cmd
+    else:
+        main_modifier = e.modifiers.meta
+
     if e.modifiers.ctrl and e.action.keydown:
         if e.key.enter:
-            button_run_callback()
+            editor.on_run()         
+        elif main_modifier and e.action.keydown:
+            if e.key.s:
+                editor.on_save()
+            elif e.key.o:
+                editor.on_load()
+            elif e.key.z:
+                editor.on_undo()
+            elif e.key.y:
+                editor.on_redo()
 
-
-keyboard = ui.keyboard(on_key=handle_key)
 # TODO: consider separating this module and how best to organize it (if name == main, etc.)
-app.on_shutdown(shutdown_all)  # register shutdown handler
-ui.run(
-    native=True,
-    window_size=(1800, 900),
-    title="nicegui-cadviewer",
-    fullscreen=False,
-    reload=False,
-)
+
 # ui.run(native=True, window_size=(1800, 900), fullscreen=False, reload=True) #use reload=True when developing rapidly, False helps exit behavior
 
 # layout info https://github.com/zauberzeug/nicegui/discussions/1937
+
+# [Functions]
+
+# run ocp_vscode in a subprocess
+def startup_all():
+    global ocpcv_proc
+    # spawn separate viewer process
+    ocpcv_proc = subprocess.Popen(["python", "-m", "ocp_vscode"])
+    # pre-import build123d and ocp_vscode in main thread
+    exec("from build123d import *\nfrom ocp_vscode import *")
+
+
+
+def shutdown_all():
+    ocpcv_proc.kill()
+    # ocpcv_proc.terminate() # TODO: investigate best cross-platform solution
+    editor.save()
+    app.shutdown()
+
+
+
+def main():
+    
+    # Startup
+    app.on_startup(startup_all)
+    app.on_shutdown(shutdown_all)  # register shutdown handler
+    keyboard = ui.keyboard(on_key=handle_key)
+
+    # Execution
+    ui.run(
+        native=True,
+        window_size=(1800, 900),
+        title="nicegui-cadviewer",
+        fullscreen=False,
+        reload=False,
+    )
+
+# [Main]
+if __name__ == '__main__':
+    main()
