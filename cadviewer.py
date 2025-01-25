@@ -36,6 +36,10 @@ license:
 from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 import subprocess
+from pathlib import Path
+
+models_path = Path(__file__).parent / "models"
+code_file = models_path / "basic.py"
 
 app.native.window_args["resizable"] = True
 app.native.start_args["debug"] = True
@@ -69,6 +73,9 @@ app.on_startup(startup_all)
 
 button_frac = 0.05
 
+with code_file.open() as f:
+    code_text = f.read()
+
 
 with ui.splitter().classes(
     "w-full h-[calc(100vh-2rem)] no-wrap items-stretch border"
@@ -83,7 +90,7 @@ with ui.splitter().classes(
             # ui.button('shutdown', on_click=lambda: shutdown_all()) # just close the window
             code = (
                 ui.codemirror(
-                    'print("Edit me!")\nprint("hello world")',
+                    code_text,
                     language="Python",
                     theme="vscodeLight",
                 )
