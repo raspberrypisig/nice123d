@@ -103,17 +103,14 @@ def handle_key(e: KeyEventArguments):
             editor.on_run()         
         elif e.key.name == "s":
             editor.on_save()
-            editor.log.push(editor.info('save', 'Code saved'))
         elif e.key.name == "o":
             editor.on_load()
-            editor.log.push(editor.info('load', 'Code loaded'))
         elif e.key.name == "z":
             editor.on_undo()
         elif e.key.name == "y":
             editor.on_redo()
         elif e.key.name == "t":
             editor.on_new()
-            editor.log.push(editor.info('new', 'New file created'))
 
 # TODO: consider separating this module and how best to organize it (if name == main, etc.)
 

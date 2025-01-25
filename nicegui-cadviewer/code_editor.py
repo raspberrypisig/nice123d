@@ -62,7 +62,7 @@ class CodeEditor(ui.element):
         content = self.editor.value
         with open('my_python_script.py', 'w') as f:
             f.write(content)
-        print("File saved successfully")
+        self.info('file', 'saved successfully')
 
     def on_load(self):
         """Load code from a file into the editor."""
@@ -70,6 +70,7 @@ class CodeEditor(ui.element):
         with open('my_python_script.py', 'r') as f:
             content = f.read()
         self.editor.set_value(content)
+        self.info('file', 'loaded successfully')
 
     def on_undo(self):
         """Undo the last action in the editor."""
@@ -88,9 +89,9 @@ class CodeEditor(ui.element):
         if self.new_file:
             with self.new_file.open('r') as f:
                 self.editor.value = f.read()
-            self.log.push(self.info('new', f'loaded {self.new_file}'))
+            self.log.push(self.info('file', f'loaded template {self.new_file}'))
         else:
-            self.log.push(self.info('new', 'No template file specified (`new.py` in `models`). Using minimal default code'))
+            self.log.push(self.info('file', 'No template file specified (`new.py` in `models`). Using minimal default code'))
             self.editor.set_value('from build123d import *\nfrom ocp_vscode import *\n\n\nshow_all()')
 
     def on_run(self):
