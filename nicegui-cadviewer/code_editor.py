@@ -8,11 +8,17 @@ from pathlib import Path
 
 
 class CodeEditor(ui.element):
+    def set_file_name(self, event):
+        self.file_name = event.value
+
     def __init__(self, editor_width="100%", editor_height="400px", code_file=None, new_file=None):
         """Initialize the Python editor component."""
         super().__init__()
         self.time_start()
         self.file_name = ''
+        self.model_path = ''
+
+        
         # Create a toolbar with buttons
         with ui.row().classes('w-full h-10'):
             self.toolbar = ui.row().classes('w-full')
@@ -26,16 +32,20 @@ class CodeEditor(ui.element):
                 ui.button("",         icon="redo",     on_click=self.on_redo).props('color="grey"')
 
         with ui.row().classes('w-full h-full'):
-
-
             if code_file and code_file.exists():
                 with code_file.open() as f:
                     code = f.read()
                     self.file_name = code_file.name
+                    self.model_path = code_file.parent
+
             else:
                 self.on_new()
+                self.model_path = code_file.parent
 
-            ui.label(self.file_name)
+            file = ui.input(    label='File:', value=self.file_name,
+                                on_change=self.set_file_name,
+                            ).props('clearable').classes('w-40 h-10')
+            
 
             # Setup editor
             self.editor = ui.codemirror(language='python', theme='dracula')
@@ -64,7 +74,8 @@ class CodeEditor(ui.element):
         """Save the current code to a file."""
         self.time_start()
         content = self.editor.value
-        with open('my_python_script.py', 'w') as f:
+        file_path = Path(self.model_path, self.file_name)
+        with file_path.open('w') as f:
             f.write(content)
         self.info('file', 'saved successfully')
 
@@ -74,16 +85,15 @@ class CodeEditor(ui.element):
 
         def handle_upload(e: events.UploadEventArguments):
             text = e.content.read().decode('utf-8')
-            print(dir(e.content))
             self.editor.value = text
+            self.file_name = e.name
             upload_bar.delete()
             
         upload_bar = ui.upload(auto_upload=True, on_upload=handle_upload).props('accept=.py').classes('max-w-full')        
-        self.file_name = upload_bar.name()
+        # TODO: ^ for now we need a second click to upload the file
         
         self.log.push(self.info('file', 'loaded successfully'))
         
-
     def on_undo(self):
         """Undo the last action in the editor."""
         self.log.push("TODO: `undo` needs to be implemented")
