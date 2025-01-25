@@ -43,6 +43,7 @@ import platform
 # [Variables]
 models_path = Path(__file__).parent / ".." / "models"
 code_file = models_path / "basic.py"
+new_file = models_path / "new.py"
 editor = None 
 # get the operating system
 active_os = platform.system()
@@ -70,7 +71,7 @@ with ui.splitter().classes(
          
         with ui.tab_panels(tabs, value=page_editor).classes('w-full h-full items-stretch border'):
             with ui.tab_panel(page_editor):
-                editor = CodeEditor(code_file=code_file)
+                editor = CodeEditor(code_file=code_file, new_file=new_file)
 
             with ui.tab_panel(page_parameters):
                 ui.label('Parameters')
@@ -80,7 +81,7 @@ with ui.splitter().classes(
 
             
     with splitter.after:
-        with ui.column().classes("w-full items-stretch border"):
+        with ui.column().classes("w-full h-full items-stretch border"):
             ocpcv = (
                 ui.element("iframe")
                 .props('src="http://127.0.0.1:3939/viewer"')
@@ -97,18 +98,22 @@ def handle_key(e: KeyEventArguments):
     else:
         main_modifier = e.modifiers.meta
 
-    if e.modifiers.ctrl and e.action.keydown:
+    if main_modifier and e.action.keydown:
         if e.key.enter:
             editor.on_run()         
-        elif main_modifier and e.action.keydown:
-            if e.key.s:
-                editor.on_save()
-            elif e.key.o:
-                editor.on_load()
-            elif e.key.z:
-                editor.on_undo()
-            elif e.key.y:
-                editor.on_redo()
+        elif e.key.name == "s":
+            editor.on_save()
+            editor.log.push(editor.info('save', 'Code saved'))
+        elif e.key.name == "o":
+            editor.on_load()
+            editor.log.push(editor.info('load', 'Code loaded'))
+        elif e.key.name == "z":
+            editor.on_undo()
+        elif e.key.name == "y":
+            editor.on_redo()
+        elif e.key.name == "t":
+            editor.on_new()
+            editor.log.push(editor.info('new', 'New file created'))
 
 # TODO: consider separating this module and how best to organize it (if name == main, etc.)
 
