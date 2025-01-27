@@ -1,23 +1,28 @@
 from nicegui import ui
 from nicegui import events
-import os 
+import logging
+
 from datetime import datetime
-import platform
 import time
 from pathlib import Path
-
+from app_logging import NiceGUILogHandler
+import platform
+# TODO: consider separate editor execution thread from nicegui thread
 
 
 class CodeEditor(ui.element):
+    font_size = 18   # todo: use font size for the editor
+
     def set_file_name(self, event):
         self.file_name = event.value
 
-    def __init__(self, editor_width="100%", editor_height="400px", code_file=None, new_file=None):
+    def __init__(self, code_file=None, new_file=None):
         """Initialize the Python editor component."""
         super().__init__()
         self.time_start()
         self.file_name = ''
         self.model_path = ''
+        self.log = None
 
         
         # Create a toolbar with buttons
@@ -42,22 +47,13 @@ class CodeEditor(ui.element):
                     ui.button("",         icon="undo",     on_click=self.on_undo).props('color="grey"')
                     ui.button("",         icon="redo",     on_click=self.on_redo).props('color="grey"')
 
-            if code_file and code_file.exists():
-                with code_file.open() as f:
-                    code = f.read()
-                    self.file_name = code_file.name
-                    self.model_path = code_file.parent
-
-            else:
-                self.on_new()
-                self.model_path = code_file.parent
 
             
         with ui.row().classes('w-full h-full'):
             # Setup editor
             self.editor = ui.codemirror(language='python', theme='dracula')
             self.editor.classes('w-full h-full')
-            self.editor.value = code
+            
             self.new_file = None 
             if new_file and new_file.exists():
                 self.new_file = new_file
@@ -67,6 +63,25 @@ class CodeEditor(ui.element):
     
         self.log.push(self.info('init', 'Code editor initialized'))
 
+        if code_file and code_file.exists():
+            with code_file.open() as f:
+                code = f.read()
+                self.editor.value = code
+                self.file_name = code_file.name
+                self.model_path = code_file.parent
+
+        else:
+            self.new_file = new_file
+            self.on_new()
+            self.model_path = code_file.parent
+
+            
+
+    def set_logger(self, logger: logging.Logger):
+        """Set the logger to use for logging."""
+        self.logger = logger
+        # self.logger.addHandler(NiceGUILogHandler(self.log))
+    
     def time_start(self):
         self.start_time = time.time()
 
@@ -119,9 +134,11 @@ class CodeEditor(ui.element):
         if self.new_file:
             with self.new_file.open('r') as f:
                 self.editor.value = f.read()
-            self.log.push(self.info('file', f'loaded template {self.new_file}'))
+            if self.log:    # TODO: move logging registration ealier in main window ?
+                self.log.push(self.info('file', f'loaded template {self.new_file}'))
         else:
-            self.log.push(self.info('file', 'No template file specified (`new.py` in `models`). Using minimal default code'))
+            if self.log:    # TODO: move logging registration ealier in main window ?
+                self.log.push(self.info('file', 'No template file specified (`new.py` in `models`). Using minimal default code'))
             self.editor.set_value('from build123d import *\nfrom ocp_vscode import *\n\n\nshow_all()')
 
     def on_run(self):
