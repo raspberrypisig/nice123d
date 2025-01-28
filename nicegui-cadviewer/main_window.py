@@ -10,7 +10,13 @@ from ocp_viewer import OcpViewer
 import platform
 active_os = platform.system()       # get the operating system
 
-
+# Add custom CSS for responsive sizing
+ui.add_css('''
+    :root {
+        --nicegui-default-padding: 0.5rem;
+        --nicegui-default-gap: 0.5rem;
+    }
+''')
 
 class MainWindow(ui.element):
     
