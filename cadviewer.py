@@ -35,12 +35,12 @@ license:
 
 from nicegui import app, ui
 from nicegui.events import KeyEventArguments
-import subprocess
+#import subprocess
 
 app.native.window_args["resizable"] = True
 app.native.start_args["debug"] = True
 # app.native.settings['ALLOW_DOWNLOADS'] = True # export "downloads" ?
-app.native.settings["MATPLOTLIB"] = False
+#app.native.settings["MATPLOTLIB"] = False
 
 editor_fontsize = 18
 # TODO: consider separate editor execution thread from nicegui thread
@@ -48,9 +48,9 @@ editor_fontsize = 18
 
 # run ocp_vscode in a subprocess
 def startup_all():
-    global ocpcv_proc
+    #global ocpcv_proc
     # spawn separate viewer process
-    ocpcv_proc = subprocess.Popen(["python", "-m", "ocp_vscode"])
+    #ocpcv_proc = subprocess.Popen(["python", "-m", "ocp_vscode"])
     # pre-import build123d and ocp_vscode in main thread
     exec("from build123d import *\nfrom ocp_vscode import *")
 
@@ -60,7 +60,7 @@ def button_run_callback():
 
 
 def shutdown_all():
-    ocpcv_proc.kill()
+    #ocpcv_proc.kill()
     # ocpcv_proc.terminate() # TODO: investigate best cross-platform solution
     app.shutdown()
 
